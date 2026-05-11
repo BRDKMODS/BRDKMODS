@@ -1,0 +1,36 @@
+name: Mirror to Gogs and Gitverse
+
+on:
+  push:
+    branches:
+      - '*' # Срабатывать при пуше в любую ветку
+    tags:
+      - '*' # Срабатывать при создании тегов
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # ВАЖНО: Выкачивает всю историю коммитов, а не только последний
+
+      - name: Push to Gogs
+        env:
+          # Замените URL на ваш адрес Gogs. Формат: https://ДОМЕН/ПОЛЬЗОВАТЕЛЬ/РЕПОЗИТОРИЙ.git
+          GOGS_URL: "https://license.brdk-dayz.ru/BRKDMODS/BRDKMODS.git"
+          TOKEN: ${{ secrets.GOGS_TOKEN }}
+        run: |
+          git remote add gogs "https://${TOKEN}@${GOGS_URL#https://}"
+          git push gogs --mirror --force
+
+      - name: Push to Gitverse
+        env:
+          # Замените URL на ваш адрес Gitverse
+          GITVERSE_URL: "https://gitverse.ru/brdkmods/BRDKMODS.git"
+          TOKEN: ${{ secrets.GITVERSE_TOKEN }}
+        run: |
+          git remote add gitverse "https://${TOKEN}@${GITVERSE_URL#https://}"
+          git push gitverse --mirror --force
